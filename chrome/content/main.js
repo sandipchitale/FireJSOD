@@ -17,12 +17,14 @@ var theApp =
     {
         Firebug.registerPanel(JSODPanel);
         Firebug.registerUIListener(ShowJSOD);
+        Firebug.registerStylesheet("chrome://firejsod/skin/JSOD.css");
     },
 
     shutdown: function()
     {
         Firebug.unregisterUIListener(ShowJSOD);
         Firebug.unregisterPanel(JSODPanel);
+        Firebug.unregisterStylesheet("chrome://firejsod/skin/JSOD.css");
     }
 }
 
