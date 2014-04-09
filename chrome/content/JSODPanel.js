@@ -296,8 +296,6 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
             // $(expressionInput).on('keydown', evaluateOnEnter);
 
             function drawJavascriptObject(svg, gr, label, value, ox, oy, boxWidth, boxHeight) {
-                var g = svg.group(gr, 'g', {fontFamily: 'Courier', fontSize: '12'});
-
                 function functionName(functionString) {
                     try {
                         return /^function\s*(([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\([^)]*\))\s*/.exec('' + functionString)[1];
@@ -306,30 +304,33 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     }
                 }
 
-                function doDrawJavascriptObjectProperties(x, y, borderColor, properties, internalProperties) {
+                function doDrawJavascriptObjectProperties(x, y, borderColor, value) {
                     var props = [];
                     var tooltip;
 
                     function compareText(a, b) {
                         return a.text.localeCompare(b.text);
                     }
-                    for(var prop = 0; prop < properties.length; prop++) {
-                        var propName = properties[prop].name;
-                        var propValue = properties[prop].value;
+                    for(var prop in value) {
+                        if (!value.hasOwnProperty(prop)) {
+                            continue;
+                        }
+                        var propName = prop;
+                        var propValue = value[prop];
                         // Skip __proto__ as we already rendered it above
                         if ('__proto__' == propName) {
                             continue;
                         }
 
                         if (propValue) {
-                            if (propValue.type === 'function') {
+                            if ($.isFunction(propValue) === 'function') {
                                 continue;
-                            } else if (propValue.type === 'object') {
+                            } else if ((typeof propValue) === 'object') {
                                 props.push({text:propName + 'O', value: propValue});
-                            } else if (propValue.type === 'number') {
-                                props.push({text:propName + ' : ' + propValue.value + '#', value: propValue});
-                            } else if (propValue.type === 'string') {
-                                props.push({text:propName + ' : \'' + propValue.value.substring(0,36) + '\'S', value: propValue});
+                            } else if ((typeof propValue) === 'number') {
+                                props.push({text:propName + ' : ' + propValue + '#', value: propValue});
+                            } else if ((typeof propValue) === 'string') {
+                                props.push({text:propName + ' : \'' + propValue.substring(0,36) + '\'S', value: propValue});
                             } else {
                                 props.push({text:propName + ' : ' + propValue.value + (propValue.type === 'boolean' ? 'B' : '-'), value: propValue});
                             }
@@ -338,12 +339,15 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     props.sort(compareText);
 
                     var funcs = [];
-                    for(var prop = 0; prop < properties.length; prop++) {
-                        var propName = properties[prop].name;
-                        var propValue = properties[prop].value;
+                    for(var prop in value) {
+                        if (!value.hasOwnProperty(prop)) {
+                            continue;
+                        }
+                        var propName = prop;
+                        var propValue = value[prop];
 
                         if (propValue) {
-                            if (propValue.type == "function") {
+                            if ($.isFunction(propValue)) {
                                 funcs.push({text:propName + '()F', value: propValue});
                             }
                         }
@@ -384,16 +388,10 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                             svg.text(g, x+6, y+15, '-', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                         } else if (type === 'N') {
                         }
-                        if (type === 'O' || type === 'A' || type === 'F') {
-                            var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
-                            $(loadButton).on('click', loadProperty.bind(this, propertyLabel, propetyValue));
-                            var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
-                            $(loadButtonText).on('click', loadProperty.bind(this, propertyLabel, propetyValue));
-                        }
                     }
                 }
 
-                function doDrawJavascriptObject(ox, oy, value, properties, internalProperties, hasConstructorAsOwnProperty, __proto__Object, constructorObject, __proto____proto__Object) {
+                function doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, __proto__Object, constructorObject, __proto____proto__Object) {
                     var x = ox;
                     var y = oy;
                     // Normal object i.e. not a prototype like
@@ -403,15 +401,15 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         svg.line(g, x-(boxWidth/4), y+12, x, y+12,  {stroke: 'black', markerEnd: 'url(#arrow)'});
                         svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'black', strokeWidth: '2'});
 
-                        if (value.type === "object" && value.subtype == "array") {
+                        if ($.isArray(value)) {
                             svg.text(g, x+5, y+16, '[]', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                             svg.text(g, x+20, y+16, label + ' : ' + value.description, {fill: 'black', fontWeight: 'bold'});
-                        } else if (value.type === "function") {
+                        } else if ($.isFunction(value)) {
                             svg.text(g, x+5, y+16, 'fx', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                            svg.text(g, x+20, y+16, label + ' : ' + functionName(value.description), {fill: 'black', fontWeight: 'bold'});
+                            svg.text(g, x+20, y+16, label + ' : ' + functionName("" + value), {fill: 'black', fontWeight: 'bold'});
                         } else {
                             svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                            svg.text(g, x+20, y+16, label + ' : ' + value.description, {fill: 'black', fontWeight: 'bold'});
+                            svg.text(g, x+20, y+16, label + ' : ' + '{}', {fill: 'black', fontWeight: 'bold'});
                         }
 
                         if (__proto__Object) {
@@ -443,7 +441,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                             }
                         }
 
-                        doDrawJavascriptObjectProperties(x, y, 'black', properties, internalProperties);
+                        doDrawJavascriptObjectProperties(x, y, 'black', value);
                     }
 
                     if (!hasConstructorAsOwnProperty  && !__proto__Object ) {
@@ -466,9 +464,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'gray', strokeWidth: '2'});
                     svg.text(g, x+6, y+15, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                     if (__proto____proto__Object && __proto____proto__Object.description) {
-                        svg.text(g, x+20, y+16, '{} : ' + __proto____proto__Object.description, {fill: 'black', fontWeight: 'bold'});
+                        svg.text(g, x+20, y+16, '{} : ' + __proto____proto__Object, {fill: 'black', fontWeight: 'bold'});
                     } else {
-                        svg.text(g, x+20, y+16, '{} : ' + __proto__Object.description, {fill: 'black', fontWeight: 'bold'});
+                        svg.text(g, x+20, y+16, '{} : ' + __proto__Object, {fill: 'black', fontWeight: 'bold'});
                     }
                     var c2pr = svg.line(g, x+(boxWidth+(boxWidth/4)), y+12, x+boxWidth, y+12, {stroke: 'black', markerEnd: 'url(#arrow)'});
                     svg.title(c2pr, 'Reference to prototype object from Constructor function.');
@@ -507,12 +505,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     }
 
                     if (hasConstructorAsOwnProperty) {
-                        doDrawJavascriptObjectProperties(x, y, 'gray', properties, internalProperties);
+                        doDrawJavascriptObjectProperties(x, y, 'gray', value);
                     } else {
-                        function get__proto__Properties(x, y, properties, internalProperties) {
-                            doDrawJavascriptObjectProperties(x, y, 'gray', properties, internalProperties);
-                        }
-                        WebInspector.RemoteObject.loadFromObjectPerProto(__proto__Object, get__proto__Properties.bind(this, x, y));
+                        doDrawJavascriptObjectProperties(x, y, 'gray', __proto__Object);
                     }
 
                     if (hasConstructorAsOwnProperty) {
@@ -532,32 +527,26 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     svg.text(g, x+20, y+16, 'prototype', {fill: 'black'});
                     svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
 
-                    function getConstructorObjectProperties(x, y, properties, internalProperties) {
-                        doDrawJavascriptObjectProperties(x, y, 'lightGray', properties, internalProperties);
-                    }
-                    WebInspector.RemoteObject.loadFromObjectPerProto(constructorObject, getConstructorObjectProperties.bind(this, x, y));
+                    doDrawJavascriptObjectProperties(x, y, 'lightGray', constructorObject);
                 }
 
-                function callback(ox, oy, value, properties, internalProperties)
+                function callback(ox, oy, value)
                 {
-                    if (!properties)
-                        return;
-
                     var hasConstructorAsOwnProperty = false;
                     var constructorObject;
                     var __proto__Object;
-                    for(var ci = 0; ci < properties.length; ci++) {
-                        if ('constructor' === properties[ci].name) {
-                            constructorObject = properties[ci].value;
-                            hasConstructorAsOwnProperty = true;
-                        } else if ('__proto__' === properties[ci].name && properties[ci].value) {
-                            __proto__Object = properties[ci].value;
-                        }
+
+                    if (value.hasOwnProperty('constructor')) {
+                        constructorObject = value.constructor;
+                        hasConstructorAsOwnProperty = true;
+                    }
+                    if (value.__proto__) {
+                        __proto__Object = value.__proto__;
                     }
 
                     if (hasConstructorAsOwnProperty) {
                         // the value is really the __proto__Object
-                        doDrawJavascriptObject(ox, oy, value, properties, internalProperties, hasConstructorAsOwnProperty, value, constructorObject, __proto__Object);
+                        doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, value, constructorObject, __proto__Object);
                         // __proto__Object is really the __proto____proto__Object for the next level, so also draw the next level
                         if (__proto__Object) {
                             ox += 800;
@@ -568,16 +557,14 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     }
 
                     var __proto____proto__Object;
-                    function get__proto____proto__Object(ox, oy, __proto__properties, internalProperties) {
-                        for(var ci = 0; ci < __proto__properties.length; ci++) {
-                            if ('constructor' === __proto__properties[ci].name) {
-                                 constructorObject = __proto__properties[ci].value;
-                            }
-                            if ('__proto__' === __proto__properties[ci].name && __proto__properties[ci].value) {
-                                __proto____proto__Object = __proto__properties[ci].value;
-                            }
+                    function get__proto____proto__Object(ox, oy, __proto__Object) {
+                        if (__proto__Object.hasOwnProperty('constructor')) {
+                             constructorObject = __proto__Object.constructor;
                         }
-                        doDrawJavascriptObject(ox, oy, value, properties, internalProperties, hasConstructorAsOwnProperty, __proto__Object, constructorObject, __proto____proto__Object);
+                        if (__proto__Object.__proto__) {
+                            __proto____proto__Object = __proto__Object.__proto__;
+                        }
+                        doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, __proto__Object, constructorObject, __proto____proto__Object);
                         // Recurse
                         if (__proto____proto__Object) {
                             // Initially just use the passed in name as label
@@ -591,13 +578,14 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         }
                     }
                     if (__proto__Object) {
-                        WebInspector.RemoteObject.loadFromObjectPerProto(__proto__Object, get__proto____proto__Object.bind(this, ox, oy));
+                        (get__proto____proto__Object.bind(this, ox, oy))(__proto__Object);
                     } else {
-                        doDrawJavascriptObject(ox, oy, value, properties, internalProperties, false);
+                        doDrawJavascriptObject(ox, oy, value, false);
                     }
                 }
 
-                WebInspector.RemoteObject.loadFromObjectPerProto(value, callback.bind(this, ox, oy, value));
+                var g = svg.group(gr, 'g', {fontFamily: 'Courier', fontSize: '12'});
+                (callback.bind(this, ox, oy))(value);
             }
 
             function drawGraph(svg, gr, name, value) {
