@@ -40,7 +40,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
         this.jsodTemplate.tag.replace({}, this.panelNode, this.jsodTemplate);
     },
 
-    showJSOD: function(label, value)
+    showJSOD: function(name, value)
     {
         var that = this;
         $("#svg", this.panelNode).svg(function(svg) {
@@ -61,8 +61,6 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
             var expressionInput = $("#EXPR", that.panelNode)[0];
             var evaluateExpression = $("#EVAL", that.panelNode)[0];
             var resultValue = $("#RESVAL", that.panelNode)[0];
-
-            Firebug.Console.log(zoomOutButton);
 
             var zoomlevel = 1.0;
             var ox = 0;
@@ -238,16 +236,6 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 }
             });
 
-            function drawGraph(svg, gr, name, value) {
-                if (value) {
-                    var boxWidth = 320;
-                    var boxHeight = 24;
-                    var x = boxWidth/4;
-                    var y = boxHeight;
-                    drawJavascriptObject(svg, gr, name, value, x, y, boxWidth, boxHeight);
-                }
-            }
-
             function clear() {
                 if (g) {
                     while (g.firstChild) {
@@ -264,48 +252,48 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 drawGraph(svg, g, propertyLabel, propetyValue);
             }
 
-            function evaluate() {
-                function expressionEvaluated(e) {
-                    try {
-                        if (e && e.data) {
-                            clear();
-                            if (e.data.wasThrown) {
-                                expressionInput.classList.add('JSOD-error');
-                            }
-                            if (e.data.result.type === 'object' || e.data.result.type === 'function') {
-                                drawGraph(svg, g, expressionInput.value, e.data.result);
-                            } else {
-                                resultValue.value = '' + e.data.result.value;
-                            }
-                        }
-                    } finally {
-                        WebInspector.console.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, expressionEvaluated, this);
-                    }
-                }
-                if (expressionInput.value) {
-                    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, expressionEvaluated, this);
-                    WebInspector.console.evaluateCommand(expressionInput.value, true);
-                }
-            }
-            $(evaluateExpression).on('click', evaluate);
-
-            function evaluateOnEnter(e) {
-                expressionInput.classList.remove('JSOD-error');
-                resultValue.value = '';
-                if (e.keyCode === 13) {
-                    noop(e);
-                    evaluate();
-                    return;
-                }
-
-            }
-
-            function noop(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            $(expressionInput).on('keydown', evaluateOnEnter);
+            // function evaluate() {
+                // function expressionEvaluated(e) {
+                    // try {
+                        // if (e && e.data) {
+                            // clear();
+                            // if (e.data.wasThrown) {
+                                // expressionInput.classList.add('JSOD-error');
+                            // }
+                            // if (e.data.result.type === 'object' || e.data.result.type === 'function') {
+                                // drawGraph(svg, g, expressionInput.value, e.data.result);
+                            // } else {
+                                // resultValue.value = '' + e.data.result.value;
+                            // }
+                        // }
+                    // } finally {
+                        // WebInspector.console.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, expressionEvaluated, this);
+                    // }
+                // }
+                // if (expressionInput.value) {
+                    // WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, expressionEvaluated, this);
+                    // WebInspector.console.evaluateCommand(expressionInput.value, true);
+                // }
+            // }
+            // $(evaluateExpression).on('click', evaluate);
+//
+            // function evaluateOnEnter(e) {
+                // expressionInput.classList.remove('JSOD-error');
+                // resultValue.value = '';
+                // if (e.keyCode === 13) {
+                    // noop(e);
+                    // evaluate();
+                    // return;
+                // }
+//
+            // }
+//
+            // function noop(e) {
+                // e.preventDefault();
+                // e.stopPropagation();
+            // }
+//
+            // $(expressionInput).on('keydown', evaluateOnEnter);
 
             function drawJavascriptObject(svg, gr, label, value, ox, oy, boxWidth, boxHeight) {
                 var g = svg.group(gr, 'g', {fontFamily: 'Courier', fontSize: '12'});
@@ -611,11 +599,22 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
 
                 WebInspector.RemoteObject.loadFromObjectPerProto(value, callback.bind(this, ox, oy, value));
             }
+
+            function drawGraph(svg, gr, name, value) {
+                if (value) {
+                    var boxWidth = 320;
+                    var boxHeight = 24;
+                    var x = boxWidth/4;
+                    var y = boxHeight;
+                    drawJavascriptObject(svg, gr, name, value, x, y, boxWidth, boxHeight);
+                }
+            }
+
             expressionInput.value = name;
-            if (value.type === 'object' || value.type === 'function') {
+            if (((typeof value) === 'object') || ((typeof value) === 'function')) {
                 drawGraph(svg, g, name, value);
             } else {
-                resultValue.value = '' + value.value;
+                resultValue.value = '' + value;
             }
         });
     }
