@@ -44,7 +44,7 @@ var ShowJSOD =
     onShowJSOD: function(object)
     {
     	var jsodPanel =Firebug.chrome.selectPanel("jsodpanel");
-    	jsodPanel.showJSOD({name: "", value: object});
+    	jsodPanel.showJSOD("{}", object);
     }
 };
 
