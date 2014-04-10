@@ -250,56 +250,13 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 drawGraph(svg, g, propertyLabel, propetyValue);
             }
 
-            // function evaluate() {
-                // function expressionEvaluated(e) {
-                    // try {
-                        // if (e && e.data) {
-                            // clear();
-                            // if (e.data.wasThrown) {
-                                // expressionInput.classList.add('JSOD-error');
-                            // }
-                            // if (e.data.result.type === 'object' || e.data.result.type === 'function') {
-                                // drawGraph(svg, g, expressionInput.value, e.data.result);
-                            // } else {
-                                // resultValue.value = '' + e.data.result.value;
-                            // }
-                        // }
-                    // } finally {
-                        // WebInspector.console.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, expressionEvaluated, this);
-                    // }
-                // }
-                // if (expressionInput.value) {
-                    // WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, expressionEvaluated, this);
-                    // WebInspector.console.evaluateCommand(expressionInput.value, true);
-                // }
-            // }
-            // $(evaluateExpression).on('click', evaluate);
-//
-            // function evaluateOnEnter(e) {
-                // expressionInput.classList.remove('JSOD-error');
-                // resultValue.value = '';
-                // if (e.keyCode === 13) {
-                    // noop(e);
-                    // evaluate();
-                    // return;
-                // }
-//
-            // }
-//
-            // function noop(e) {
-                // e.preventDefault();
-                // e.stopPropagation();
-            // }
-//
-            // $(expressionInput).on('keydown', evaluateOnEnter);
-
             function drawJavascriptObject(svg, gr, valueLabel, value, ox, oy, boxWidth, boxHeight) {
                 function functionName(functionString) {
-                    try {
-                        return /^function\s*(([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\([^)]*\))\s*/.exec('' + functionString)[1];
-                    } catch(e) {
-                        return functionString.substring(9, 39);
-                    }
+                    // try {
+                        // return /^function\s*(([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\([^)]*\))\s*/.exec('' + functionString)[1];
+                    // } catch(e) {
+                        return functionString.substring(0, 30);
+                    // }
                 }
 
                 function doDrawJavascriptObjectProperties(x, y, borderColor, value) {
@@ -489,7 +446,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                     if (__proto____proto__Object) {
                         svg.text(g, x+20, y+16, '__proto__', {fill: 'black'});
-                        var ppr = svg.line(g, x+boxWidth, y+12, x+(boxWidth*1.25), y+12,  {stroke: 'black'});
+                        var ppr = svg.line(g, x+boxWidth, y+12, x+(boxWidth*2.25), y+12,  {stroke: 'black'});
                         svg.title(ppr, 'Hidden reference to prototype object.');
 
                         var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
@@ -521,7 +478,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray', strokeWidth: '2'});
                     svg.text(g, x+5, y+16, 'fx', {fill: 'white', fontSize: '9', fontWeight: 'bold'});
-                    svg.text(g, x+20, y+16, 'function ' + functionName(Object.prototype.toString.call(constructorObject)), {fill: 'black', fontWeight: 'bold'});
+                    svg.text(g, x+20, y+16, functionName(Object.prototype.toString.call(constructorObject)), {fill: 'black', fontWeight: 'bold'});
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray'});
                     svg.text(g, x+20, y+16, 'prototype', {fill: 'black'});
@@ -659,8 +616,9 @@ JSODPanel.prototype.jsodTemplate = domplate(
                 TD("&nbsp;"),
                 TD("&nbsp;")
             )
+
         ),
-        DIV({id: "svg", style: "padding: 5px; border: 1px solid lightgray; height: 1000px; overflow: hidden;"})
+        DIV({id: "svg", style: "padding: 5px; border: 1px solid lightgray; overflow: hidden; bottom: 0; height: 800px;"})
     ),
     render: function(parentNode)
     {
