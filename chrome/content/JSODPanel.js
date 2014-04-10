@@ -406,7 +406,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                             svg.text(g, x+20, y+16, valueLabel + ' : ' + value, {fill: 'black', fontWeight: 'bold'});
                         } else if ((typeof value) == 'function') {
                             svg.text(g, x+5, y+16, 'fx', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                            svg.text(g, x+20, y+16, valueLabel + ' : ' + value, {fill: 'black', fontWeight: 'bold'});
+                            svg.text(g, x+20, y+16, valueLabel + ' : ' + functionName(Object.prototype.toString.call(value)), {fill: 'black', fontWeight: 'bold'});
                         } else {
                             svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                             svg.text(g, x+20, y+16, valueLabel + ' : ' + '{}', {fill: 'black', fontWeight: 'bold'});
@@ -521,7 +521,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray', strokeWidth: '2'});
                     svg.text(g, x+5, y+16, 'fx', {fill: 'white', fontSize: '9', fontWeight: 'bold'});
-                    svg.text(g, x+20, y+16, 'function ' + constructorObject, {fill: 'black', fontWeight: 'bold'});
+                    svg.text(g, x+20, y+16, 'function ' + functionName(Object.prototype.toString.call(constructorObject)), {fill: 'black', fontWeight: 'bold'});
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray'});
                     svg.text(g, x+20, y+16, 'prototype', {fill: 'black'});
