@@ -234,7 +234,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 }
             });
 
-            function clear() {
+            function clear(g) {
                 if (g) {
                     while (g.firstChild) {
                         g.removeChild(g.firstChild);
@@ -246,7 +246,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 e.stopPropagation();
                 e.preventDefault();
                 expressionInput.value = '';
-                clear();
+                clear(g);
                 drawGraph(svg, g, propertyLabel, propetyValue);
             }
 
@@ -272,25 +272,28 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         if (!value.hasOwnProperty(prop)) {
                             continue;
                         }
-                        var propName = prop;
-                        var propValue = value[prop];
-                        // Skip __proto__ as we already rendered it above
-                        if ('__proto__' == propName) {
-                            continue;
-                        }
-
-                        if (propValue) {
-                            if ((typeof propValue) === 'function') {
+                        try {
+                            var propName = prop;
+                            var propValue = value[prop];
+                            // Skip __proto__ as we already rendered it above
+                            if ('__proto__' == propName) {
                                 continue;
-                            } else if ((typeof propValue) === 'object') {
-                                props.push({text:propName + 'O', value: propValue});
-                            } else if ((typeof propValue) === 'number') {
-                                props.push({text:propName + ' : ' + propValue + '#', value: propValue});
-                            } else if ((typeof propValue) === 'string') {
-                                props.push({text:propName + ' : \'' + propValue.substring(0,36) + '\'S', value: propValue});
-                            } else {
-                                props.push({text:propName + ' : ' + propValue + ((typeof propValue) === 'boolean' ? 'B' : '-'), value: propValue});
                             }
+
+                            if (propValue) {
+                                if ((typeof propValue) === 'function') {
+                                    continue;
+                                } else if ((typeof propValue) === 'object') {
+                                    props.push({text:propName + 'O', value: propValue});
+                                } else if ((typeof propValue) === 'number') {
+                                    props.push({text:propName + ' : ' + propValue + '#', value: propValue});
+                                } else if ((typeof propValue) === 'string') {
+                                    props.push({text:propName + ' : \'' + propValue.substring(0,36) + '\'S', value: propValue});
+                                } else {
+                                    props.push({text:propName + ' : ' + propValue + ((typeof propValue) === 'boolean' ? 'B' : '-'), value: propValue});
+                                }
+                            }
+                        } catch (e) {
                         }
                     }
                     props.sort(compareText);
@@ -344,6 +347,12 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         } else if (type === '-') {
                             svg.text(g, x+6, y+15, '-', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                         } else if (type === 'N') {
+                        }
+                        if (type === 'O' || type === 'A' || type === 'F') {
+                            var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
+                            $(loadButton).on('click', loadProperty.bind(this, propertyLabel, propetyValue));
+                            var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
+                            $(loadButtonText).on('click', loadProperty.bind(this, propertyLabel, propetyValue));
                         }
                     }
                 }
@@ -550,6 +559,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
 
             function drawGraph(svg, gr, valueLabel, value) {
                 if (value) {
+                    clear(gr);
                     var boxWidth = 320;
                     var boxHeight = 24;
                     var x = boxWidth/4;
@@ -557,7 +567,6 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     drawJavascriptObject(svg, gr, valueLabel, value, x, y, boxWidth, boxHeight);
                 }
             }
-
             expressionInput.value = name;
             if (((typeof value) === 'object') || ((typeof value) === 'function')) {
                 drawGraph(svg, g, valueLabel, value);
