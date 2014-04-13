@@ -301,13 +301,17 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         if (!value.hasOwnProperty(prop)) {
                             continue;
                         }
-                        var propName = prop;
-                        var propValue = value[prop];
+                        try {
+                            var propName = prop;
+                            var propValue = value[prop];
 
-                        if (propValue) {
-                            if ((typeof propValue) === 'function') {
-                                funcs.push({text:propName + '()F', value: propValue});
+                            if (propValue) {
+                                if ((typeof propValue) === 'function') {
+                                    funcs.push({text:propName + '()F', value: propValue});
+                                }
                             }
+                        } catch (e) {
+                            // ignore
                         }
                     }
                     funcs.sort(compareText);
@@ -569,9 +573,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
             that.showJSOD = function(value) {
                 var valueLabel = '{}';
                 if ($.isArray(value)) {
-                    valueLabel = '[]'
+                    valueLabel = '[]';
                 } else if ((typeof value) === 'function') {
-                    valueLabel = '()'
+                    valueLabel = '()';
                 }
                 expressionInput.value = valueLabel;
                 if (((typeof value) === 'object') || ((typeof value) === 'function')) {
