@@ -37,13 +37,16 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
     },
 
     createUI: function() {
-        this.jsodTemplate.tag.replace({}, this.panelNode, this.jsodTemplate);
-    },
-
-    showJSOD: function(valueLabel, value)
-    {
+        this.jsodTemplate.render(this.panelNode);
         var that = this;
-        $("#svg", this.panelNode).svg(function(svg) {
+        $("#svg", this.panelNode).svg({onLoad: function(svg) {
+            svg.style.width = '100%';
+
+            var defs = svg.defs(null, "jsoddefs")
+            var arrow = svg.marker(defs, 'arrow', 9, 6, 13, 13);
+            var arrowHead = svg.createPath();
+            svg.path(arrow, arrowHead.move(2,2).line(2,11).
+            line(10, 6).line(2,2).close(), {fill: '#000000'});
 
             var zoomOutButton = $("#ZO", that.panelNode)[0];
             var zoomRange = $("#ZR", that.panelNode)[0];
@@ -177,11 +180,6 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
             $(panSouthButton).on('click', panSouth);
             $(panSouthEastButton).on('click', panSouthEast);
 
-            var defs = svg.defs(null, "jsoddefs")
-            var arrow = svg.marker(defs, 'arrow', 9, 6, 13, 13);
-            var arrowHead = svg.createPath();
-            svg.path(arrow, arrowHead.move(2,2).line(2,11).
-            line(10, 6).line(2,2).close(), {fill: '#000000'});
             var g = svg.group({fontFamily: 'Courier', fontSize: '12'});
 
             var dragging = false;
@@ -567,13 +565,26 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     drawJavascriptObject(svg, gr, valueLabel, value, x, y, boxWidth, boxHeight);
                 }
             }
-            expressionInput.value = name;
-            if (((typeof value) === 'object') || ((typeof value) === 'function')) {
-                drawGraph(svg, g, valueLabel, value);
-            } else {
-                resultValue.value = '' + value;
+
+            that.showJSOD = function(value) {
+                var valueLabel = '{}';
+                if ($.isArray(value)) {
+                    valueLabel = '[]'
+                } else if ((typeof value) === 'function') {
+                    valueLabel = '()'
+                }
+                expressionInput.value = valueLabel;
+                if (((typeof value) === 'object') || ((typeof value) === 'function')) {
+                    drawGraph(svg, g, valueLabel, value);
+                } else {
+                    resultValue.value = '' + value;
+                }
             }
-        });
+        },
+        settings: {
+            width: '100%',
+            height: '100%'
+        }});
     }
 });
 
@@ -627,11 +638,11 @@ JSODPanel.prototype.jsodTemplate = domplate(
             )
 
         ),
-        DIV({id: "svg", style: "padding: 5px; border: 1px solid lightgray; overflow: hidden; bottom: 0; height: 800px;"})
+        DIV({id: "svg", style: "padding: 5px; overflow: hidden; bottom: 0; width: 100%; height: 800px;"})
     ),
     render: function(parentNode)
     {
-        this.tag.replace({}, parentNode);
+        this.tag.replace({}, parentNode, this);
     }
 });
 
