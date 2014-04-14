@@ -267,9 +267,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         return a.text.localeCompare(b.text);
                     }
                     for(var prop in value) {
-                        if (!value.hasOwnProperty(prop)) {
-                            continue;
-                        }
+                        //if (!value.hasOwnProperty(prop)) {
+                        //    continue;
+                        //}
                         try {
                             var propName = prop;
                             var propValue = value[prop];
@@ -307,7 +307,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
 
                             if (propValue) {
                                 if ((typeof propValue) === 'function') {
-                                    funcs.push({text:propName + '()F', value: propValue});
+                                    funcs.push({text:propName + '()F', value: (propValue.name || propValue)});
                                 }
                             }
                         } catch (e) {
@@ -374,10 +374,14 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                             svg.text(g, x+20, y+16, valueLabel + ' : ' + value, {fill: 'black', fontWeight: 'bold'});
                         } else if ((typeof value) == 'function') {
                             svg.text(g, x+5, y+16, 'fx', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                            svg.text(g, x+20, y+16, valueLabel + ' : ' + functionName(Object.prototype.toString.call(value)), {fill: 'black', fontWeight: 'bold'});
+                            svg.text(g, x+20, y+16, valueLabel + ' : ' + (value.name || functionName(Object.prototype.toString.call(value))), {fill: 'black', fontWeight: 'bold'});
                         } else {
                             svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                            svg.text(g, x+20, y+16, valueLabel + ' : ' + '{}', {fill: 'black', fontWeight: 'bold'});
+                            if (value.constructor && value.constructor.name) {
+                                svg.text(g, x+20, y+16, valueLabel + ' : ' + value.constructor.name, {fill: 'black', fontWeight: 'bold'});
+                            } else {
+                                svg.text(g, x+20, y+16, valueLabel + ' : ' + '{}', {fill: 'black', fontWeight: 'bold'});
+                            }
                         }
 
                         if (__proto__Object) {
@@ -390,9 +394,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                                 svg.title(cfr1, 'Reference to Constructor function via inherited constructor property.');
 
                                 var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
-                                $(loadButton).on('click', loadProperty.bind(this, 'constructor', constructorObject));
+                                $(loadButton).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
                                 var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
-                                $(loadButtonText).on('click', loadProperty.bind(this, 'constructor', constructorObject));
+                                $(loadButtonText).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
                             }
 
                             y += boxHeight;
@@ -431,8 +435,8 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     }
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'gray', strokeWidth: '2'});
                     svg.text(g, x+6, y+15, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                    if (__proto____proto__Object && __proto____proto__Object.description) {
-                        svg.text(g, x+20, y+16, '{} : ' + __proto____proto__Object, {fill: 'black', fontWeight: 'bold'});
+                    if (__proto__Object.__proto__ && __proto__Object.__proto__.constructor && __proto__Object.__proto__.constructor.name) {
+                        svg.text(g, x+20, y+16, '{} : ' + __proto__Object.__proto__.constructor.name, {fill: 'black', fontWeight: 'bold'});
                     } else {
                         svg.text(g, x+20, y+16, '{} : ' + __proto__Object, {fill: 'black', fontWeight: 'bold'});
                     }
@@ -447,9 +451,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     svg.title(p2cr, 'Reference to Constructor function.');
 
                     var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
-                    $(loadButton).on('click', loadProperty.bind(this, 'constructor', constructorObject));
+                    $(loadButton).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
                     var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
-                    $(loadButtonText).on('click', loadProperty.bind(this, 'constructor', constructorObject));
+                    $(loadButtonText).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
 
                     y += boxHeight;
                     y += boxHeight;
@@ -489,7 +493,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray', strokeWidth: '2'});
                     svg.text(g, x+5, y+16, 'fx', {fill: 'white', fontSize: '9', fontWeight: 'bold'});
-                    svg.text(g, x+20, y+16, functionName(Object.prototype.toString.call(constructorObject)), {fill: 'black', fontWeight: 'bold'});
+                    svg.text(g, x+20, y+16, constructorObject.name || functionName(Object.prototype.toString.call(constructorObject)), {fill: 'black', fontWeight: 'bold'});
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray'});
                     svg.text(g, x+20, y+16, 'prototype', {fill: 'black'});
@@ -575,7 +579,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 if ($.isArray(value)) {
                     valueLabel = '[]';
                 } else if ((typeof value) === 'function') {
-                    valueLabel = '()';
+                    valueLabel = value.name || '()';
                 }
                 expressionInput.value = valueLabel;
                 if (((typeof value) === 'object') || ((typeof value) === 'function')) {
