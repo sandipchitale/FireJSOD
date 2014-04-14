@@ -298,9 +298,9 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
 
                     var funcs = [];
                     for(var prop in value) {
-                        if (!value.hasOwnProperty(prop)) {
-                            continue;
-                        }
+                        // if (!value.hasOwnProperty(prop)) {
+                            // continue;
+                        // }
                         try {
                             var propName = prop;
                             var propValue = value[prop];
