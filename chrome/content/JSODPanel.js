@@ -244,6 +244,13 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                 e.stopPropagation();
                 e.preventDefault();
                 expressionInput.value = '';
+
+                ox = 0;
+                oy = 0;
+                panzoom();
+                zoomRange.value = 0;
+                zoomTo();
+
                 clear(g);
                 drawGraph(svg, g, propertyLabel, propetyValue);
             }
