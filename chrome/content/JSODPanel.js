@@ -359,7 +359,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     }
                 }
 
-                function doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, __proto__Object, constructorObject, __proto____proto__Object) {
+                function doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, __proto__Object, __proto____proto__Object) {
                     var x = ox;
                     var y = oy;
                     // Normal object i.e. not a prototype like
@@ -389,14 +389,14 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                             svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'WhiteSmoke', stroke: 'black'});
                             svg.text(g, x+5, y+16, 'fx', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
                             svg.text(g, x+20, y+16, 'constructor : ' + (value.constructor.name || ''), {fill: 'lightGray'});
-                            if (constructorObject) {
+                            if (value.constructor) {
                                 var cfr1 = svg.line(g, x+boxWidth, y+12, x+boxWidth+(boxWidth/4), y+12,  {stroke: 'lightGray'});
                                 svg.title(cfr1, 'Reference to Constructor function via inherited constructor property.');
 
                                 var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
-                                $(loadButton).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
+                                $(loadButton).on('click', loadProperty.bind(this, value.constructor.name || 'constructor', value.constructor));
                                 var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
-                                $(loadButtonText).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
+                                $(loadButtonText).on('click', loadProperty.bind(this, value.constructor.name || 'constructor', value.constructor));
                             }
 
                             y += boxHeight;
@@ -440,22 +440,27 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     } else {
                         svg.text(g, x+20, y+16, '{} : ' + __proto__Object, {fill: 'black', fontWeight: 'bold'});
                     }
-                    var c2pr = svg.line(g, x+(boxWidth+(boxWidth/4)), y+12, x+boxWidth, y+12, {stroke: 'black', markerEnd: 'url(#arrow)'});
-                    svg.title(c2pr, 'Reference to prototype object from Constructor function.');
 
-                    y -= boxHeight;
-                    svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'gray'});
-                    svg.text(g, x+5, y+15, 'fx', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
-                    svg.text(g, x+20, y+16, 'constructor', {fill: 'black'});
-                    var p2cr = svg.line(g, x+boxWidth, y+12, x+(boxWidth+(boxWidth/4)), y+12,  {stroke: 'black', markerEnd: 'url(#arrow)'});
-                    svg.title(p2cr, 'Reference to Constructor function.');
+                    if (value.constructor) {
+                        var c2pr = svg.line(g, x+(boxWidth+(boxWidth/4)), y+12, x+boxWidth, y+12, {stroke: 'black', markerEnd: 'url(#arrow)'});
+                        svg.title(c2pr, 'Reference to prototype object from Constructor function.');
 
-                    var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
-                    $(loadButton).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
-                    var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
-                    $(loadButtonText).on('click', loadProperty.bind(this, constructorObject.name || 'constructor', constructorObject));
+                        y -= boxHeight;
 
-                    y += boxHeight;
+                        svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'gray'});
+                        svg.text(g, x+5, y+15, 'fx', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
+                        svg.text(g, x+20, y+16, 'constructor', {fill: 'black'});
+                        var p2cr = svg.line(g, x+boxWidth, y+12, x+(boxWidth+(boxWidth/4)), y+12,  {stroke: 'black', markerEnd: 'url(#arrow)'});
+                        svg.title(p2cr, 'Reference to Constructor function.');
+
+                        var loadButton = svg.rect(g, x+boxWidth-20, y+(boxHeight/2)-8, 16, 16, {fill: 'WhiteSmoke', stroke: 'lightgray', strokeWidth: '1'});
+                        $(loadButton).on('click', loadProperty.bind(this, value.constructor.name || 'constructor', value.constructor));
+                        var loadButtonText = svg.text(g, x+boxWidth-15, y+(boxHeight/2)+4, '=',{stroke: 'lightgray', strokeWidth: '1'});
+                        $(loadButtonText).on('click', loadProperty.bind(this, value.constructor.name || 'constructor', value.constructor));
+
+                        y += boxHeight;
+                    }
+
                     y += boxHeight;
                     svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'gray'});
                     svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
@@ -490,16 +495,18 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         y = oy;
                     }
 
-                    y += boxHeight;
-                    svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray', strokeWidth: '2'});
-                    svg.text(g, x+5, y+16, 'fx', {fill: 'white', fontSize: '9', fontWeight: 'bold'});
-                    svg.text(g, x+20, y+16, constructorObject.name || functionName(Object.prototype.toString.call(constructorObject)), {fill: 'black', fontWeight: 'bold'});
-                    y += boxHeight;
-                    svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray'});
-                    svg.text(g, x+20, y+16, 'prototype', {fill: 'black'});
-                    svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
+                    if (value.constructor) {
+                        y += boxHeight;
+                        svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray', strokeWidth: '2'});
+                        svg.text(g, x+5, y+16, 'fx', {fill: 'white', fontSize: '9', fontWeight: 'bold'});
+                        svg.text(g, x+20, y+16, value.constructor.name || functionName(Object.prototype.toString.call(value.constructor)), {fill: 'black', fontWeight: 'bold'});
+                        y += boxHeight;
+                        svg.rect(g, x, y, boxWidth, boxHeight,  {fill: 'white', stroke: 'lightGray'});
+                        svg.text(g, x+20, y+16, 'prototype', {fill: 'black'});
+                        svg.text(g, x+7, y+16, 'o', {fill: 'black', fontSize: '9', fontWeight: 'bold'});
 
-                    doDrawJavascriptObjectProperties(x, y, 'lightGray', constructorObject);
+                        doDrawJavascriptObjectProperties(x, y, 'lightGray', value.constructor);
+                    }
                 }
 
                 // This functions determines if this is a regular object or a function prototype
@@ -511,7 +518,6 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     var __proto__Object;
 
                     if (value.hasOwnProperty('constructor')) {
-                        constructorObject = value.constructor;
                         hasConstructorAsOwnProperty = true;
                     }
                     if (value.__proto__) {
@@ -521,7 +527,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     // Is the value a prototype object
                     if (hasConstructorAsOwnProperty) {
                         // the value is really the __proto__Object
-                        doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, /*__proto__Object */ value, constructorObject, /*__proto____proto__Object*/ __proto__Object);
+                        doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, /*__proto__Object */ value, /*__proto____proto__Object*/ __proto__Object);
                         // __proto__Object is really the __proto____proto__Object for the next level, so also draw the next level
                         if (__proto__Object) {
                             ox += 800;
@@ -540,7 +546,7 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         if (__proto__Object.__proto__) {
                             __proto____proto__Object = __proto__Object.__proto__;
                         }
-                        doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, __proto__Object, constructorObject, __proto____proto__Object);
+                        doDrawJavascriptObject(ox, oy, value, hasConstructorAsOwnProperty, __proto__Object, __proto____proto__Object);
                         // Recurse
                         if (__proto____proto__Object) {
                             // Initially just use the passed in name as label
