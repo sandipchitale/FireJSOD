@@ -23,7 +23,7 @@ var ShowJSOD =
      */
     onContextMenu: function(items, object, target, context, panel, popup)
     {
-        if (object == null || object == undefined  || panel.name != "watches")
+        if (object == null || object == undefined  /* || panel.name != "watches" */)
             return;
 
         items.push("-");
