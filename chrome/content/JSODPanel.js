@@ -273,14 +273,15 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     function compareText(a, b) {
                         return a.text.localeCompare(b.text);
                     }
-                    for(var prop in value) {
+                    var propNames = Object.getOwnPropertyNames(value) || [];
+                    for(var prop = 0; prop < propNames.length; prop++) {
+                        var propName = propNames[prop];
                         //if (!value.hasOwnProperty(prop)) {
                         //    continue;
                         //}
                         try {
-                            var propName = prop;
-                            var propValue = value[prop];
-                            // Skip __proto__ as we already rendered it above
+                            var propValue = value[propName];
+                            // Skip __proto__ as we already rendered it
                             if ('__proto__' == propName) {
                                 continue;
                             }
@@ -304,13 +305,14 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                     props.sort(compareText);
 
                     var funcs = [];
-                    for(var prop in value) {
-                        // if (!value.hasOwnProperty(prop)) {
-                            // continue;
-                        // }
+                    for(var prop = 0; prop < propNames.length; prop++) {
+                        var propName = propNames[prop];
+                        // Only show own functions
+                        //if (!value.hasOwnProperty(propName)) {
+                        //    continue;
+                        //}
                         try {
-                            var propName = prop;
-                            var propValue = value[prop];
+                            var propValue = value[propName];
 
                             if (propValue) {
                                 if ((typeof propValue) === 'function') {
