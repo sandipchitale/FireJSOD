@@ -3,7 +3,7 @@ FireJSOD
 
 Integration of JavaScript Object Diagram with Firebug.
 
-Current Version: 1.5
+Current Version: 1.8
 
 How to use?
 
