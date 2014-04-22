@@ -279,12 +279,12 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         //if (!value.hasOwnProperty(prop)) {
                         //    continue;
                         //}
+                        // Skip __proto__ as we already rendered it
+                        if ('__proto__' == propName) {
+                            continue;
+                        }
                         try {
                             var propValue = value[propName];
-                            // Skip __proto__ as we already rendered it
-                            if ('__proto__' == propName) {
-                                continue;
-                            }
 
                             if (propValue) {
                                 if ((typeof propValue) === 'function') {
@@ -311,6 +311,10 @@ JSODPanel.prototype = FBL.extend(Firebug.Panel,
                         //if (!value.hasOwnProperty(propName)) {
                         //    continue;
                         //}
+                        // Skip constructor as we already rendered it
+                        if ('constructor' == propName) {
+                            continue;
+                        }
                         try {
                             var propValue = value[propName];
 
